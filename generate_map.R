@@ -11,7 +11,7 @@ library(leaflet)
 library(htmlwidgets)
 
 # Set Pandoc path for self-contained HTML
-Sys.setenv(RSTUDIO_PANDOC="C:/Program Files/RStudio/resources/app/bin/quarto/bin/tools")
+Sys.setenv(RSTUDIO_PANDOC = "C:/Program Files/RStudio/resources/app/bin/quarto/bin/tools")
 
 # Read data
 data_path <- "Marini_iDigBio_306museums_coord_with_country_for518Map.xlsx"
@@ -23,13 +23,13 @@ df_clean <- df %>%
     # Round coordinates to 5 decimal places
     Latitude = round(Latitude, 5),
     Longitude = round(Longitude, 5),
-    
+
     # Handle missing website links
     website_html = case_when(
       is.na(Website) | Website == "" ~ Museum,
       TRUE ~ paste0("<a href='", Website, "' target='_blank'>", Museum, "</a>")
     ),
-    
+
     # Construct popup text
     popup_text = paste0(
       "<b>Museum:</b> ", website_html, "<br>",
@@ -42,10 +42,15 @@ df_clean <- df %>%
 m <- leaflet(df_clean) %>%
   addTiles(urlTemplate = "https://mt1.google.com/vt/lyrs=m&hl=zh-TW&x={x}&y={y}&z={z}") %>%
   addMarkers(
-    lng = ~Longitude, 
-    lat = ~Latitude, 
+    lng = ~Longitude,
+    lat = ~Latitude,
     popup = ~popup_text,
     clusterOptions = markerClusterOptions()
+  ) %>%
+  addControl(
+    html = htmltools::HTML("<div style='background: rgba(255, 255, 255, 0.8); font-size: 30px; font-weight: bold; padding: 20px; border-radius: 8px; box-shadow: 0 4px 12px rgba(0,0,0,0.15); line-height: 1.2;'>全球鳥蛋博物館地圖</div>"),
+    position = "bottomleft",
+    className = ""
   )
 
 # Save self-contained HTML
