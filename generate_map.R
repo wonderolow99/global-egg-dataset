@@ -32,9 +32,9 @@ df_clean <- df %>%
 
     # Construct popup text
     popup_text = paste0(
-      "<b>Museum:</b> ", website_html, "<br>",
-      "<b>Country:</b> ", Country, "<br>",
-      "<b>Estimated Egg Sets:</b> ", egg_sets_estimated
+      "<b>博物館:</b> ", website_html, "<br>",
+      "<b>地點:</b> ", Country, "<br>",
+      "<b>蛋標本組數:</b> ", format(round(as.numeric(egg_sets_estimated)), big.mark = ",", scientific = FALSE, trim = TRUE)
     )
   )
 
@@ -55,5 +55,13 @@ m <- leaflet(df_clean) %>%
 
 # Save self-contained HTML
 saveWidget(m, file = "index.html", selfcontained = TRUE)
+
+# Workaround for Pandoc 3.0+ bug that incorrectly wraps htmlwidgets with {=html}
+html_content <- readLines("index.html", warn = FALSE, encoding = "UTF-8")
+if (any(grepl("\\{=html\\}", html_content))) {
+  html_content <- gsub("<p><code>\\{=html\\}\\s*", "", html_content)
+  html_content <- gsub("</div>\\s*</code></p>", "</div>", html_content)
+  writeLines(html_content, "index.html", useBytes = TRUE)
+}
 
 cat("Map generated successfully and saved to index.html\n")
