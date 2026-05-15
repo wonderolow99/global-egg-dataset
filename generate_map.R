@@ -53,15 +53,8 @@ m <- leaflet(df_clean) %>%
     className = ""
   )
 
-# Save self-contained HTML
-saveWidget(m, file = "index.html", selfcontained = TRUE)
+# Save HTML without selfcontained=TRUE to avoid Pandoc 3.0+ escaping bug
+saveWidget(m, file = "index.html", selfcontained = FALSE)
 
-# Workaround for Pandoc 3.0+ bug that incorrectly wraps htmlwidgets with {=html}
-html_content <- readLines("index.html", warn = FALSE, encoding = "UTF-8")
-if (any(grepl("\\{=html\\}", html_content))) {
-  html_content <- gsub("<p><code>\\{=html\\}\\s*", "", html_content)
-  html_content <- gsub("</div>\\s*</code></p>", "</div>", html_content)
-  writeLines(html_content, "index.html", useBytes = TRUE)
-}
 
 cat("Map generated successfully and saved to index.html\n")
