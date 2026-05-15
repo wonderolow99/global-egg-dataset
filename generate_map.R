@@ -53,8 +53,28 @@ m <- leaflet(df_clean) %>%
     className = ""
   )
 
-# Save HTML without selfcontained=TRUE to avoid Pandoc 3.0+ escaping bug
-saveWidget(m, file = "index.html", selfcontained = FALSE)
+# Save self-contained HTML
+saveWidget(m, file = "index.html", selfcontained = TRUE)
+
+# Workaround for Pandoc 3.0+ escaping bug
+# Read as a single string to avoid line-by-line regex truncation
+html_raw <- readLines("index.html", warn = FALSE, encoding = "UTF-8")
+html_str <- paste(html_raw, collapse = "\n")
+
+if (grepl("\\{=html\\}", html_str)) {
+  # Remove the Markdown wrapper tags
+  html_str <- gsub("<p><code>\\{=html\\}\\s*", "", html_str)
+  html_str <- gsub("</code></p>", "", html_str)
+  
+  # Decode HTML entities escaped by Pandoc
+  html_str <- gsub("&lt;", "<", html_str)
+  html_str <- gsub("&gt;", ">", html_str)
+  html_str <- gsub("&quot;", "\\\"", html_str)
+  html_str <- gsub("&#39;", "'", html_str)
+  html_str <- gsub("&amp;", "&", html_str)
+  
+  writeLines(html_str, "index.html", useBytes = TRUE)
+}
 
 
 cat("Map generated successfully and saved to index.html\n")
